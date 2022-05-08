@@ -1,0 +1,22 @@
+package praktikum;
+
+public class CustomerCredentials {
+
+    private final String email;
+    private final String password;
+
+    public CustomerCredentials(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+
+}
