@@ -63,14 +63,14 @@ public class OrderCreateTest {
     @Test
     public void CreateOrderWithoutLogin() {
 
-        ArrayList<String> ingredientsId = new ArrayList<>();
+        ArrayList<String> ingredientsIds = new ArrayList<>();
         order = new Order();
         ValidatableResponse getIngredientsResponse = orderClient.check(order);
-        ingredientsId.add(getIngredientsResponse.extract().path("data[0]._id").toString());
-        ingredientsId.add(getIngredientsResponse.extract().path("data[1]._id").toString());
-        ingredientsId.add(getIngredientsResponse.extract().path("data[2]._id").toString());
-        System.out.println(ingredientsId);
-        ValidatableResponse orderResponse = orderClient.create(ingredientsId);
+        ingredientsIds.add(getIngredientsResponse.extract().path("data[0]._id").toString());
+        ingredientsIds.add(getIngredientsResponse.extract().path("data[1]._id").toString());
+        ingredientsIds.add(getIngredientsResponse.extract().path("data[2]._id").toString());
+        System.out.println(ingredientsIds);
+        ValidatableResponse orderResponse = orderClient.create(ingredientsIds);
         Boolean responseMessageStatus = orderResponse.extract().path("false");
         String responseMessageName = orderResponse.extract().path("name");
         assertThat("Response is incorrect", responseMessageStatus, is("true"));
@@ -86,8 +86,13 @@ public class OrderCreateTest {
         ArrayList<String> ingredientsId = new ArrayList<>();
         System.out.println(ingredientsId);
         ValidatableResponse orderResponse = orderClient.create(ingredientsId);
-        Boolean responseMessageStatus = orderResponse.extract().path("false");
-        String responseMessageName = orderResponse.extract().path("name");
+        Boolean responseMessageStatus = orderResponse.extract().path("success");
+        int statusCode = orderResponse.extract().statusCode();
+        assertThat("Error: You can`t create a courier without login", statusCode, equalTo(400));
+        String responseMessage = orderResponse.extract().path("message");
+        assertThat("Can't create an oder", responseMessageStatus, equalTo(false));
+        System.out.println(responseMessage);
+        assertThat("Response is incorrect", responseMessage, equalTo("Ingredient ids must be provided"));
 
     }
 

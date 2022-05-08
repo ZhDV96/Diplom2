@@ -11,18 +11,17 @@ import io.qameta.allure.Description;
 
 public class LoginCustomerTest {
 
-    Customer customer;
-    CustomerClient customerClient;
-    CustomerGenerator courierGenerator = new CustomerGenerator();
-    int courierId;
+    CustomerClient customerClient = new CustomerClient();
+    CustomerGenerator customerGenerator = new CustomerGenerator();
+    Customer customer = customerGenerator.getRandom();
+    ValidatableResponse createResponse = customerClient.create(customer);
+    String accessToken = createResponse.extract().path("accessToken").toString().substring(7);
     String randomEmail = RandomStringUtils.randomAlphabetic(10, 15) + "@yandex.ru";
     String randomPassword = RandomStringUtils.randomAlphabetic(4);
 
     @Before
     public void setUp() {
-        customerClient = new CustomerClient();
-        customer = courierGenerator.getRandom();
-        customerClient.create(customer);
+
     }
 
     @DisplayName("Использование пользователем учетной записи с валидными данными")
@@ -30,12 +29,11 @@ public class LoginCustomerTest {
     @Test
     public void loginCourierWithValidateData() {
 
-        ValidatableResponse loginResponse = courierClient.login(new CourierCredentials(courier.getLogin(), courier.getPassword()));
-        int statusCode = loginResponse.extract().statusCode();
-        assertThat("Courier can't login", statusCode, equalTo(200));
-        courierId = loginResponse.extract().path("id");
-        System.out.println(courierId);
-        assertThat("Can't login courier", courierId, is(not(0)));
+        ValidatableResponse loginResponse = customerClient.login(new CustomerCredentials(customer.getEmail(), customer.getPassword()));
+        Boolean success = loginResponse.extract().path("success");
+        assertThat("Can't create a customer", success, equalTo(true));
+        String loginAccessToken = loginResponse.extract().path("accessToken").toString().substring(7);
+        assertThat("Can't login customer", loginAccessToken, notNullValue());
 
     }
 
@@ -44,12 +42,12 @@ public class LoginCustomerTest {
     @Test
     public void loginCourierWithoutLogin() {
 
-        ValidatableResponse loginResponse = courierClient.login(new CourierCredentials(null, courier.getPassword()));
+        ValidatableResponse loginResponse = customerClient.login(new CustomerCredentials(null, customer.getPassword()));
         int statusCode = loginResponse.extract().statusCode();
-        assertThat("Courier can't login", statusCode, equalTo(400));
+        assertThat("Courier can't login", statusCode, equalTo(401));
         String responseMessage = loginResponse.extract().path("message");
         System.out.println(responseMessage);
-        assertThat("Response is incorrect", responseMessage, equalTo("Недостаточно данных для входа"));
+        assertThat("Response is incorrect", responseMessage, equalTo("email or password are incorrect"));
 
     }
 
@@ -58,12 +56,12 @@ public class LoginCustomerTest {
     @Test
     public void loginCourierWithNonExistentData() {
 
-        ValidatableResponse loginResponse = courierClient.login(new CourierCredentials(randomLogin, randomPassword));
+        ValidatableResponse loginResponse = customerClient.login(new CustomerCredentials(randomEmail, randomPassword));
         int statusCode = loginResponse.extract().statusCode();
-        assertThat("Courier can't login", statusCode, equalTo(404));
+        assertThat("Courier can't login", statusCode, equalTo(401));
         String responseMessage = loginResponse.extract().path("message");
         System.out.println(responseMessage);
-        assertThat("Response is incorrect", responseMessage, equalTo("Учетная запись не найдена"));
+        assertThat("Response is incorrect", responseMessage, equalTo("email or password are incorrect"));
 
 
     }
@@ -73,12 +71,12 @@ public class LoginCustomerTest {
     @Test
     public void loginCourierWithoutPassword() {
 
-        ValidatableResponse loginResponse = courierClient.login(new CourierCredentials(courier.getLogin(), null));
+        ValidatableResponse loginResponse = customerClient.login(new CustomerCredentials(customer.getEmail(), null));
         int statusCode = loginResponse.extract().statusCode();
-        assertThat("Courier can't login", statusCode, equalTo(400));
+        assertThat("Courier can't login", statusCode, equalTo(401));
         String responseMessage = loginResponse.extract().path("message");
         System.out.println(responseMessage);
-        assertThat("Response is incorrect", responseMessage, equalTo("Недостаточно данных для входа"));
+        assertThat("Response is incorrect", responseMessage, equalTo("email or password are incorrect"));
 
 
     }
@@ -86,7 +84,7 @@ public class LoginCustomerTest {
 
     @After
     public void tearDown() {
-        courierClient.delete(courierId);
+        customerClient.delete(accessToken);
     }
 
 }
