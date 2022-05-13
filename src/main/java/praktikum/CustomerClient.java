@@ -6,6 +6,7 @@ import static io.restassured.RestAssured.given;
 public class CustomerClient  extends StellarClient {
 
     private static final String CUSTOMER_PATH = "api/auth/";
+    private static final String ORDER_PATH = "api/";
 
     @Step("Создание ользователя")
     public ValidatableResponse create(Customer customer) {
@@ -54,6 +55,28 @@ public class CustomerClient  extends StellarClient {
                 .body(customer)
                 .when()
                 .delete(CUSTOMER_PATH + "user")
+                .then();
+    }
+
+    @Step("Получение данных о заказах пользователя")
+    public ValidatableResponse checkProfileInfo(CustomerCredentials customerCredentials, String accessToken) {
+        return given()
+                .spec(getBaseSpec())
+                .body(customerCredentials)
+                .when()
+                .auth().oauth2(accessToken)
+                .get(ORDER_PATH + "orders")
+                .then();
+    }
+
+    @Step("Получение данных о заказах пользователя")
+    public ValidatableResponse changeProfileInfo(CustomerCredentials customerCredentials, String accessToken) {
+        return given()
+                .spec(getBaseSpec())
+                .body(customerCredentials)
+                .when()
+                .auth().oauth2(accessToken)
+                .patch(CUSTOMER_PATH + "user")
                 .then();
     }
 

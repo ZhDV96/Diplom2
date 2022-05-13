@@ -21,10 +21,10 @@ public class OrderClient extends StellarClient {
     }
 
     @Step("Создание заказа")
-    public ValidatableResponse createAuthorized(List<String> ingredientsId, String accessToken) {
+    public ValidatableResponse createAuthorized(Order order, String accessToken) {
         return given()
                 .spec(getBaseSpec())
-                .body(ingredientsId)
+                .body(order)
                 .when()
                 .auth().oauth2(accessToken)
                 .post(ORDER_PATH + "orders")

@@ -5,7 +5,6 @@ import io.restassured.response.ValidatableResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import static io.restassured.RestAssured.given;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,12 +22,11 @@ public class OrderCreateTest {
     CustomerGenerator customerGenerator = new CustomerGenerator();
     Customer customer = customerGenerator.getRandom();
     ValidatableResponse loginResponse = customerClient.create(customer);
-    String accessToken = loginResponse.extract().path("accessToken").toString().substring(7);
+    Order orderList;
 
     @Before
     public void setUp() {
         orderClient = new OrderClient();
-        System.out.println(accessToken);
         RestAssured.baseURI = "https://stellarburgers.nomoreparties.site/";
     }
 
@@ -37,22 +35,27 @@ public class OrderCreateTest {
     @Test
     public void CreateOrderWithLogin() {
 
+        ValidatableResponse authorizationResponse = customerClient.login(new CustomerCredentials(customer.getEmail(), customer.getPassword()));
+        String accessToken = authorizationResponse.extract().path("accessToken").toString().substring(7);
+        System.out.println(accessToken);
         ArrayList<String> ingredients = new ArrayList<>();
         order = new Order();
         ValidatableResponse getIngredientsResponse = orderClient.check(order);
         ingredients.add(getIngredientsResponse.extract().path("data[0]._id").toString());
         ingredients.add(getIngredientsResponse.extract().path("data[1]._id").toString());
-        ingredients.add(getIngredientsResponse.extract().path("data[2]._id").toString());
         System.out.println(ingredients);
+        orderList = new Order(ingredients);
         Response orderResponse =
                 given()
                         .header("Content-type", "application/json")
                         .and()
-                        .body(ingredients)
+                        .body(orderList)
+                        .log().all()
                         .when()
                         .auth().oauth2(accessToken)
                         .post("api/orders/");
         orderResponse.then()
+                .log().all()
                 .body("success", equalTo(true))
                 .body("order.number", notNullValue());
 
@@ -98,7 +101,7 @@ public class OrderCreateTest {
 
     @After
     public void tearDown() {
-        customerClient.delete(accessToken);
+
     }
 
 }
