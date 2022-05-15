@@ -1,26 +1,23 @@
 package praktikum;
 import io.restassured.response.ValidatableResponse;
 import io.qameta.allure.Step;
-
-import java.util.List;
-
 import static io.restassured.RestAssured.given;
 
 public class OrderClient extends StellarClient {
 
     private static final String ORDER_PATH = "api/";
 
-    @Step("Создание заказа")
-    public ValidatableResponse create(List<String> ingredientsId) {
+    @Step("Создание заказа без авторизации")
+    public ValidatableResponse createUnauthorized(Order order) {
         return given()
                 .spec(getBaseSpec())
-                .body(ingredientsId)
+                .body(order)
                 .when()
                 .post(ORDER_PATH + "orders")
                 .then();
     }
 
-    @Step("Создание заказа")
+    @Step("Создание заказа с авторизацией")
     public ValidatableResponse createAuthorized(Order order, String accessToken) {
         return given()
                 .spec(getBaseSpec())

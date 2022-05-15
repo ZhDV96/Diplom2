@@ -39,16 +39,6 @@ public class CustomerClient  extends StellarClient {
     }
 
     @Step("Выход пользователя из системы")
-    public ValidatableResponse logout(String refreshToken) {
-        return given()
-                .spec(getBaseSpec())
-                .body(refreshToken)
-                .when()
-                .post(CUSTOMER_PATH + "logout")
-                .then();
-    }
-
-    @Step("Выход пользователя из системы")
     public ValidatableResponse delete(Customer customer) {
         return given()
                 .spec(getBaseSpec())
@@ -58,8 +48,8 @@ public class CustomerClient  extends StellarClient {
                 .then();
     }
 
-    @Step("Получение данных о заказах пользователя")
-    public ValidatableResponse checkProfileInfo(CustomerCredentials customerCredentials, String accessToken) {
+    @Step("Получение данных о заказах пользователя c авторизацией")
+    public ValidatableResponse checkProfileInfoAuthorized(CustomerCredentials customerCredentials, String accessToken) {
         return given()
                 .spec(getBaseSpec())
                 .body(customerCredentials)
@@ -69,13 +59,33 @@ public class CustomerClient  extends StellarClient {
                 .then();
     }
 
-    @Step("Получение данных о заказах пользователя")
-    public ValidatableResponse changeProfileInfo(CustomerCredentials customerCredentials, String accessToken) {
+    @Step("Получение данных о заказах пользователя без авторизации")
+    public ValidatableResponse checkProfileInfoUnauthorized(CustomerCredentials customerCredentials) {
         return given()
                 .spec(getBaseSpec())
                 .body(customerCredentials)
                 .when()
+                .get(ORDER_PATH + "orders")
+                .then();
+    }
+
+    @Step("Изменение данных пользователя")
+    public ValidatableResponse changeProfileInfo(Customer customer, String accessToken) {
+        return given()
+                .spec(getBaseSpec())
+                .body(customer)
+                .when()
                 .auth().oauth2(accessToken)
+                .patch(CUSTOMER_PATH + "user")
+                .then();
+    }
+
+    @Step("Изменение данных пользователя")
+    public ValidatableResponse changeProfileInfoUnauthorized(Customer customer) {
+        return given()
+                .spec(getBaseSpec())
+                .body(customer)
+                .when()
                 .patch(CUSTOMER_PATH + "user")
                 .then();
     }

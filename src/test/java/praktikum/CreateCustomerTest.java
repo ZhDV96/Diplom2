@@ -1,7 +1,6 @@
 package praktikum;
 import io.restassured.response.ValidatableResponse;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -19,7 +18,7 @@ public class CreateCustomerTest {
     @DisplayName("Создание пользователя с валидными данными")
     @Description("Первый тест, проверяющий корректную работу api/register/")
     @Test
-    public void createCourierWithValidatableData() {
+    public void createCustomerWithValidData() {
 
         ValidatableResponse loginResponse = customerClient.login(new CustomerCredentials(customer.getEmail(), customer.getPassword()));
         Boolean success = createResponse.extract().path("success");
@@ -29,10 +28,10 @@ public class CreateCustomerTest {
 
     }
 
-    @DisplayName("Создание копии пользоватеоя с ранее использованными данными")
+    @DisplayName("Создание копии пользователя с ранее использованными данными")
     @Description("Тест, проверяющий возможность создания в api/register/ второго пользователя с ранее использованными данными")
     @Test
-    public void createCouriersCopy() {
+    public void createCustomersCopy() {
 
         ValidatableResponse createCopyResponse = customerClient.create(customer);
         int CopyStatusCode = createCopyResponse.extract().statusCode();
@@ -46,7 +45,7 @@ public class CreateCustomerTest {
     @DisplayName("Создание пользователя без использования логина")
     @Description("Тест, проверяющий возможность создания в api/register пользователя без логина")
     @Test
-    public void createCourierWithNoLogin() {
+    public void createCustomerWithNoLogin() {
 
         customer = customerGenerator.getRandomWithoutEmail();
         ValidatableResponse createResponse = customerClient.create(customer);
@@ -61,7 +60,7 @@ public class CreateCustomerTest {
     @DisplayName("Создание пользователя без использования пароля")
     @Description("Тест, проверяющий возможность создания в api/register пользователя без пароля")
     @Test
-    public void createCourierWithNoPassword() {
+    public void createCustomerWithNoPassword() {
 
         customer = customerGenerator.getRandomWithoutPassword();
         ValidatableResponse createResponse = customerClient.create(customer);
